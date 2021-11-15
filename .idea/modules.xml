@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit-analysis/jsprit-analysis.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit-analysis/jsprit-analysis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit-core/jsprit-core.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit-core/jsprit-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit-examples/jsprit-examples.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit-examples/jsprit-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit-instances/jsprit-instances.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit-instances/jsprit-instances.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../jsprit/jsprit-io/jsprit-io.iml" filepath="$PROJECT_DIR$/../jsprit/jsprit-io/jsprit-io.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/lead-lyon.iml" filepath="$PROJECT_DIR$/.idea/lead-lyon.iml" />
+    </modules>
+  </component>
+</project>

@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.matsim.core.config.CommandLine;
 import org.matsim.core.config.CommandLine.ConfigurationException;
 
+// TODO = Import the new Jsprit dependency
 import com.graphhopper.jsprit.core.algorithm.VehicleRoutingAlgorithm;
 import com.graphhopper.jsprit.core.algorithm.box.Jsprit;
 import com.graphhopper.jsprit.core.algorithm.listener.IterationEndsListener;
@@ -38,10 +39,22 @@ import com.graphhopper.jsprit.core.util.VehicleRoutingTransportCostsMatrix;
 public class RunOptimization {
 	static final int SIZE_INDEX = 0;
 
+	private double coordProjectionFactor = 1;
+
+	private double timeProjectionFactor = 1;
+
+	private double variableCostProjectionFactor = 1;
+
+	private double fixedCostPerVehicle = 1000.0;
+
+	private double batteryConsumptionRate = 1480.2;
+
+	private double batteryRechargeRate = 197.3;
+
 	static public void main(String[] args) throws NumberFormatException, IOException, ConfigurationException {
 		CommandLine cmd = new CommandLine.Builder(args) //
 				.requireOptions("deliveries-path", "costs-path", "depot-node", "output-path") //
-				.allowOptions("vehicle-speed", "vehicle-capacity", "vehicle-type", "max-iterations") //
+				.allowOptions("vehicle-speed", "vehicle-capacity", "vehicle-type", "vehicle-batteryRange", "max-iterations") //
 				.build();
 
 		String deliveriesPath = cmd.getOptionStrict("deliveries-path");
@@ -49,17 +62,24 @@ public class RunOptimization {
 		String depotNode = cmd.getOptionStrict("depot-node");
 		String outputPath = cmd.getOptionStrict("output-path");
 
-		double vehicleSpeed_m_s = cmd.getOption("vehicle-speed").map(Double::parseDouble).orElse(5.0) / 3.6;
-		double pickupServiceTime_s = 60.0;
-		double deliveryServiceTime_s = 300.0;
+		double vehicleSpeed_m_s = cmd.getOption("vehicle-speed").map(Double::parseDouble).orElse(3.) * 0.0166667; // 3 km/h = 0.05 km/min
+		int batteryRange = cmd.getOption("vehicle-batteryRange").map((int)Double::parseDouble).orElse(148*60); // 148 Wh is 148*60 Wmin is 8000mAh;
+		double pickupServiceTime_s = 1.;
+		double deliveryServiceTime_s = 5.;
+		double ChargingServiceTime_s = 45.;
 		int vehicleCapacity = cmd.getOption("vehicle-capacity").map(Integer::parseInt).orElse(4);
 		int maximumIterations = cmd.getOption("max-iterations").map(Integer::parseInt).orElse(2000);
 		int numberOfVehicles = 20;
 
 		// Define costs
 
+		// Define costs
+		// 1. Transport Costs
 		VehicleRoutingTransportCostsMatrix.Builder costBuilder = VehicleRoutingTransportCostsMatrix.Builder
-				.newInstance(true); //
+				.newInstance(true);
+		// 2. Energy costs
+		LeadEnergyCosts.Builder energyCostBuilder = LeadEnergyCosts.Builder
+				.newInstance(true);
 
 		{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(costsPath)));
@@ -87,13 +107,26 @@ public class RunOptimization {
 
 					costBuilder.addTransportDistance(fromId, toId, distance);
 					costBuilder.addTransportTime(fromId, toId, travelTime);
+					energyCostBuilder.addTransportConsumption(fromId, toId, distance*batteryConsumptionRate);
 				}
 			}
 
 			reader.close();
 		}
 
-		VehicleRoutingTransportCosts costs = costBuilder.build();
+		// Depot Location
+		Location depotLocation = depotNode;
+
+		// Charging Station
+		Location rechargeStationLocation = depotNode;
+		Recharge recharge = Recharge.Builder.newInstance("CS").setServiceTime(ChargingServiceTime_s)
+				.setLocation(rechargeStationLocation).build();
+		vrpBuilder.addJob(recharge);
+
+		reader.close();
+
+		VehicleRoutingTransportCosts transportCosts = costBuilder.build();
+		VehicleRoutingEnergyCosts energyCosts = energyCostBuilder.build();
 
 		// Define services
 
@@ -153,7 +186,9 @@ public class RunOptimization {
 					.setCostPerDistance(1.0) //
 					.setCostPerTransportTime(0.0) //
 					.setCostPerServiceTime(0.0) //
-					.setFixedCost(0.0);
+					.addBatteryDimension(SIZE_INDEX, batteryRange) //
+					.setEnergyType(EnergyType.BATTERY_ELECTRIC)
+					.setFixedCost(fixedCostPerVehicle);
 			break;
 		case "van":
 			vehicleTypeBuilder //
@@ -181,6 +216,7 @@ public class RunOptimization {
 
 		VehicleRoutingProblem problem = VehicleRoutingProblem.Builder.newInstance() //
 				.setRoutingCost(costs) //
+				.setEnergyCost(energyCosts) //
 				.setFleetSize(FleetSize.FINITE) //
 				.addAllJobs(shipments) //
 				.addAllVehicles(vehicles) //

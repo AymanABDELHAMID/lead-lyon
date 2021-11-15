@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="jsprit-core" />
+        <module name="jsprit-io" />
+        <module name="jsprit-examples" />
+        <module name="jsprit-analysis" />
+        <module name="jsprit-instances" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="jsprit" target="1.8" />
+      <module name="jsprit-analysis" target="1.8" />
+      <module name="jsprit-core" target="1.8" />
+      <module name="jsprit-examples" target="1.8" />
+      <module name="jsprit-instances" target="1.8" />
+      <module name="jsprit-io" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="jsprit-analysis" options="-XDignore.symbol.file" />
+      <module name="jsprit-core" options="-XDignore.symbol.file" />
+      <module name="jsprit-examples" options="-XDignore.symbol.file" />
+      <module name="jsprit-instances" options="-XDignore.symbol.file" />
+      <module name="jsprit-io" options="-XDignore.symbol.file" />
+    </option>
+  </component>
+</project>
